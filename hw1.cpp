@@ -43,10 +43,11 @@ extern "C" {
 
 #define MAX_PARTICLES 50000
 #define GRAVITY 0.1
-int on;
+//global vars for colors
 int rr;
 int gg;
 int bb;
+
 int showParticles=0;
 //X Windows variables
 Display *dpy;
@@ -88,7 +89,6 @@ int check_keys(XEvent *e, Game *game);
 void movement(Game *game);
 void render(Game *game);
 
-
 int main(void)
 {
     int done=0;
@@ -99,45 +99,39 @@ int main(void)
     Game game;
     game.n=0;
     game.count=0;
-
-    //declare boxes
-
+    //box1
     game.box[0].width = 100;
     game.box[0].height = 10;
     game.box[0].center.x = -125 + 5*65;
     game.box[0].center.y = 750 - 5*60;
-
+    //box2
     game.box[1].width = 100;
     game.box[1].height = 10;
     game.box[1].center.x = -50 + 5*65;
     game.box[1].center.y = 675 - 5*60;
-
+    //box3
     game.box[2].width = 100;
     game.box[2].height = 10;
     game.box[2].center.x = 25 + 5*65;
     game.box[2].center.y = 600 - 5*60;
-
-
+    //box4
     game.box[3].width = 100;
     game.box[3].height = 10;
     game.box[3].center.x = 100 + 5*65;
     game.box[3].center.y = 525 - 5*60;
-
-
+    //box5
     game.box[4].width = 100;
     game.box[4].height = 10;
     game.box[4].center.x = 175 + 5*65;
     game.box[4].center.y = 450 - 5*60;
-
-
     //init circle
     game.circle.center.x = 300 + 5*65;
     game.circle.center.y = 300 - 5*60;
     game.circle.radius = 50;
+    //init random particle colors
     rr = -1;
     gg = -1;
     bb = -1;
-    on = 0;
     //start animation
     while(!done) {
 	while(XPending(dpy)) {
@@ -215,19 +209,20 @@ void init_opengl(void)
     //
     //Set the screen background color
     glClearColor(0.1, 0.1, 0.1, 1.0);
-
     glEnable(GL_TEXTURE_2D);
     initialize_fonts();
 }
 
 void makeParticle(Game *game, int x, int y) {
-    if (game->n >= MAX_PARTICLES)
+    if (game->n >= MAX_PARTICLES) {
 	return;
+    }
     std::cout << "makeParticle() " << x << " " << y << std::endl;
     //position of particle
     Particle *p = &game->particle[game->n];
     p->s.center.x = x;
     p->s.center.y = y;
+    // random directions
     int tempy = rand() % 201 + (-100);
     p->velocity.y = (double)tempy / 100.0;
     int tempx = rand() % 201 + (-100);
@@ -240,7 +235,6 @@ void check_mouse(XEvent *e, Game *game)
     static int savex = 0;
     static int savey = 0;
     static int n = 0;
-
     if (e->type == ButtonRelease) {
 	return;
     }
@@ -261,14 +255,11 @@ void check_mouse(XEvent *e, Game *game)
     }
     //Did the mouse move?
     if (savex != e->xbutton.x || savey != e->xbutton.y) {
-
 	savex = e->xbutton.x;
 	savey = e->xbutton.y;
-
-	//int y = WINDOW_HEIGHT - e->xbutton.y;
-	//makeParticle(game, e->xbutton.x, y);
-	if (++n < 10)
+	if (++n < 10) {
 	    return;
+	}
     }
 }
 
@@ -293,27 +284,22 @@ void movement(Game *game)
 {
     Particle *p;
     Shape *s;
-    if (game->n <= 0)
+    if (game->n <= 0) {
 	return;
+    }
     for(int i = 0; i < game->n; i++) {
 	p = &game->particle[i];
-
 	p->s.center.x += p->velocity.x;
 	p->s.center.y += p->velocity.y;
 	//gravity
 	p->velocity.y -= .3;
-
-
 	//check for collision with shapes...
 	for(int j = 0; j < 5; j++) {
-
 	    s = &game->box[j];
-
 	    if(p->s.center.y >= s->center.y - (s->height) &&
 		    p->s.center.y <= s->center.y + (s->height) &&
 		    p->s.center.x >= s->center.x - (s->width) &&
 		    p->s.center.x <= s->center.x + (s->width)) {
-
 		if(p->velocity.x < 0.0) {
 		    p->velocity.x *= p->velocity.x;
 		}
@@ -346,7 +332,6 @@ void render(Game *game)
     float w, h;
     glClear(GL_COLOR_BUFFER_BIT);
     //Draw shapes...
-
     //draw box 
     if(rr < 0 && gg < 0 && bb < 0) {
 	rr = rand() % 256;
@@ -369,8 +354,7 @@ void render(Game *game)
 	glEnd();
 	glPopMatrix();
     }
-
-
+    // Text
     Rect r[5];
     r[0].left = 140;
     r[1].left = 240;
@@ -392,17 +376,13 @@ void render(Game *game)
     ggprint8b(&r[2], 16, 0x00ff0000, "Coding");
     ggprint8b(&r[3], 16, 0x00ff0000, "Testing");
     ggprint8b(&r[4], 16, 0x00ff0000, "Maintenance");
-
-
     //draw circle
     /*
-       Shape *c;
-       glColor3ub(rr,gg,bb);
-       c = &game->circle;
-       glPushMatrix();
-       */
-
-
+    Shape *c;
+    glColor3ub(rr,gg,bb);
+    c = &game->circle;
+    glPushMatrix();
+    */
     //draw all particles here
     if(showParticles) {
 	int count = 0;
