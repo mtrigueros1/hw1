@@ -36,42 +36,48 @@
 #include <X11/keysym.h>
 #include <GL/glx.h>
 extern "C" {
-#include "fonts.h"
+	#include "fonts.h"
 }
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 600
 
 #define MAX_PARTICLES 50000
 #define GRAVITY 0.1
+
 //global vars for colors
 int rr;
 int gg;
 int bb;
 
+//Used to turn on and off
 int showParticles=0;
+
 //X Windows variables
 Display *dpy;
 Window win;
 GLXContext glc;
 
 //Structures
-
-struct Vec {
+struct Vec 
+{
 	float x, y, z;
 };
 
-struct Shape {
+struct Shape 
+{
 	float width, height;
 	float radius;
 	Vec center;
 };
 
-struct Particle {
+struct Particle 
+{
 	Shape s;
 	Vec velocity;
 };
 
-struct Game {
+struct Game 
+{
 	Shape box[5];
 	Shape circle;
 	Particle particle[MAX_PARTICLES];
@@ -95,35 +101,42 @@ int main(void)
 	srand(time(NULL));
 	initXWindows();
 	init_opengl();
+	
 	//declare game object
 	Game game;
 	game.n=0;
 	game.count=0;
+	
 	//box1
 	game.box[0].width = 100;
 	game.box[0].height = 10;
 	game.box[0].center.x = -125 + 5*65;
 	game.box[0].center.y = 750 - 5*60;
+	
 	//box2
 	game.box[1].width = 100;
 	game.box[1].height = 10;
 	game.box[1].center.x = -50 + 5*65;
 	game.box[1].center.y = 675 - 5*60;
+	
 	//box3
 	game.box[2].width = 100;
 	game.box[2].height = 10;
 	game.box[2].center.x = 25 + 5*65;
 	game.box[2].center.y = 600 - 5*60;
+	
 	//box4
 	game.box[3].width = 100;
 	game.box[3].height = 10;
 	game.box[3].center.x = 100 + 5*65;
 	game.box[3].center.y = 525 - 5*60;
+	
 	//box5
 	game.box[4].width = 100;
 	game.box[4].height = 10;
 	game.box[4].center.x = 175 + 5*65;
 	game.box[4].center.y = 450 - 5*60;
+	
 	//init circle
 	game.circle.center.x = 300 + 5*65;
 	game.circle.center.y = 300 - 5*60;
@@ -132,8 +145,10 @@ int main(void)
 	rr = -1;
 	gg = -1;
 	bb = -1;
+	
 	//start animation
 	while(!done) {
+		
 		while(XPending(dpy)) {
 			XEvent e;
 			XNextEvent(dpy, &e);
@@ -156,27 +171,33 @@ void set_title(void)
 	XStoreName(dpy, win, "335 Lab1   LMB for particle");
 }
 
-void cleanupXWindows(void) {
+void cleanupXWindows(void) 
+{
 	//do not change
 	XDestroyWindow(dpy, win);
 	XCloseDisplay(dpy);
 }
 
-void initXWindows(void) {
+void initXWindows(void) 
+{
 	//do not change
 	GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 	int w=WINDOW_WIDTH, h=WINDOW_HEIGHT;
 	dpy = XOpenDisplay(NULL);
+	
 	if (dpy == NULL) {
 		std::cout << "\n\tcannot connect to X server\n" << std::endl;
 		exit(EXIT_FAILURE);
 	}
+	
 	Window root = DefaultRootWindow(dpy);
 	XVisualInfo *vi = glXChooseVisual(dpy, 0, att);
+	
 	if(vi == NULL) {
 		std::cout << "\n\tno appropriate visual found\n" << std::endl;
 		exit(EXIT_FAILURE);
 	} 
+	
 	Colormap cmap = XCreateColormap(dpy, root, vi->visual, AllocNone);
 	XSetWindowAttributes swa;
 	swa.colormap = cmap;
@@ -213,7 +234,8 @@ void init_opengl(void)
 	initialize_fonts();
 }
 
-void makeParticle(Game *game, int x, int y) {
+void makeParticle(Game *game, int x, int y) 
+{
 	if (game->n >= MAX_PARTICLES) {
 		return;
 	}
@@ -320,8 +342,8 @@ void movement(Game *game)
 		   ((game->circle.center.y - p->s.center.y) * 
 		   (game->circle.center.y - p->s.center.y)));
 		   if(dist < (game->circle.radius * game->circle.radius)) {
-		   p->velocity.y *= -.5;
-		   p->velocity.x *= -.5;
+		   	p->velocity.y *= -.5;
+		   	p->velocity.x *= -.5;
 		   }
 		 */
 	}
@@ -331,13 +353,14 @@ void render(Game *game)
 {
 	float w, h;
 	glClear(GL_COLOR_BUFFER_BIT);
-	//Draw shapes...
-	//draw box 
+	
+	//Get random colors 
 	if(rr < 0 && gg < 0 && bb < 0) {
 		rr = rand() % 256;
 		gg = rand() % 256;
 		bb = rand() % 256;
 	}
+	//Draw Box
 	for(int i = 0; i < 5; i++) {
 		Shape *s;	
 		glColor3ub(rr,gg,bb);
@@ -371,6 +394,7 @@ void render(Game *game)
 	r[2].center = 0;
 	r[3].center = 0;
 	r[4].center = 0;
+	//Draw Text
 	ggprint8b(&r[0], 16, 0x00ff0000, "Requirements");
 	ggprint8b(&r[1], 16, 0x00ff0000, "Design");
 	ggprint8b(&r[2], 16, 0x00ff0000, "Coding");
@@ -383,6 +407,7 @@ void render(Game *game)
 	   c = &game->circle;
 	   glPushMatrix();
 	 */
+	
 	//draw all particles here
 	if(showParticles) {
 		int count = 0;
@@ -394,6 +419,7 @@ void render(Game *game)
 		}
 	}
 	glPushMatrix();
+	
 	for(int i = 0; i < game->n; i++) {
 		int r = rand() % 256;
 		int g = rand() % 256;
